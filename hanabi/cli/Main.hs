@@ -7,6 +7,7 @@ import qualified Data.List.NonEmpty  as NonEmpty
 import qualified Data.List.Split     as Split
 import           Data.Map            (Map)
 import qualified Data.Map            as Map
+import qualified Data.Text           as Text
 import qualified Hanabi
 import qualified Hanabi.Parsers      as Parser
 import           Hanabi.Types        (Err (..))
@@ -125,7 +126,7 @@ printBoard state = do
                 Just Types.Color -> [colorify color, '_']
                 Just Types.Rank  -> ['_', rankify rank]
                 Nothing          -> ['_', '_']
-    printHand player = pid ++ ": " ++ hand
+    printHand player = Text.unpack pid ++ ": " ++ hand
       where
         (Types.PlayerId pid) = Types.playerId player
         hand = List.intercalate "," . map card . Types.hand $ player

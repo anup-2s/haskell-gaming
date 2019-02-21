@@ -5,6 +5,7 @@ module Hanabi.Parsers where
 import qualified Data.List          as List
 import           Data.List.NonEmpty (NonEmpty ((:|)))
 import qualified Data.List.Split    as Split
+import qualified Data.Text          as Text
 import qualified Hanabi
 import           Hanabi.Types       (Card, ClueType (..), Color (..), Move (..),
                                      PlayerId, Rank (..))
@@ -39,11 +40,11 @@ move (p :| _) (words -> ["discard", [i]]) = do
   return $ Discard (Types.cardId card)
 move (_ :| players) (words -> ["clue", p, clueInp]) = do
   player <-
-    maybe (Left $ PlayerNotFound (Types.PlayerId p)) return $
-    List.find (\x -> Types.playerId x == Types.PlayerId p) players
+    maybe (Left . PlayerNotFound . Types.PlayerId . Text.pack $ p) return $
+    List.find (\x -> Types.playerId x == (Types.PlayerId $ Text.pack p)) players
   c <- clue clueInp
   let cards = Hanabi.clueCards c player
-  return $ Clue c (Types.PlayerId p) cards
+  return $ Clue c (Types.PlayerId . Text.pack $ p) cards
 move _ inp = Left $ InvalidMoveInput inp
 
 findCard :: [Card] -> String -> Either ParserError Card

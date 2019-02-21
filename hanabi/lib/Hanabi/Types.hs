@@ -9,11 +9,11 @@ import qualified Data.Text          as Text
 import           GHC.Generics       (Generic)
 
 newtype PlayerId =
-  PlayerId String
+  PlayerId Text
   deriving (Eq, Show, Ord, Generic)
 
 newtype CardId =
-  CardId String
+  CardId Int
   deriving (Eq, Show, Ord, Generic)
 
 instance ToJSON PlayerId

@@ -10,6 +10,7 @@ import           Data.Map              (Map)
 import qualified Data.Map              as Map
 import           Data.Set              (Set)
 import qualified Data.Set              as Set
+import qualified Data.Text             as Text
 import           Hanabi.Types          (Card, CardId (..), ClueTokens (..),
                                         ClueType (..), Color, DeckState (..),
                                         Err (..), GameState, Lives (..),
@@ -17,7 +18,6 @@ import           Hanabi.Types          (Card, CardId (..), ClueTokens (..),
                                         PlayerId (..), Rank)
 import qualified Hanabi.Types          as Types
 import           Hanabi.Types.Utils    (clueCard)
-import qualified Hanabi.Types.Utils    as TypeUtils
 import           System.Random         (RandomGen)
 import qualified System.Random.Shuffle as Shuffle
 
@@ -26,13 +26,13 @@ init nPlayers gen = do
   (players, deck') <- startingHands
   return
     Types.GameState
-      { Types.players = players
-      , Types.deck = Types.Drawing deck'
-      , Types.playables = Map.empty
-      , Types.lives = Hissss
-      , Types.clueTokens = Just Clue8
-      , Types.discards = []
-      }
+    { Types.players = players
+    , Types.deck = Types.Drawing deck'
+    , Types.playables = Map.empty
+    , Types.lives = Hissss
+    , Types.clueTokens = Just Clue8
+    , Types.discards = []
+    }
   where
     cards =
       [(r, c) | r <- [Types.One .. Types.Five], c <- [Types.Red .. Types.White]]
@@ -41,13 +41,11 @@ init nPlayers gen = do
     createCard :: Int -> (Rank, Color) -> Card
     createCard i (r, c) =
       Types.Card
-        { Types.rank = r
-        , Types.color = c
-        , Types.cardId =
-            Types.CardId
-              (show i ++ " - " ++ TypeUtils.colorStr c ++ TypeUtils.rankStr r)
-        , Types.clues = Nothing
-        }
+      { Types.rank = r
+      , Types.color = c
+      , Types.cardId = Types.CardId i
+      , Types.clues = Nothing
+      }
     handSize 2 = Right 5
     handSize 3 = Right 5
     handSize 4 = Right 4
@@ -55,7 +53,8 @@ init nPlayers gen = do
     handSize x = Left (InvalidPlayerCount x)
     toPlayer :: Char -> [Card] -> Player
     toPlayer char hand =
-      Types.Player {Types.playerId = Types.PlayerId [char], Types.hand = hand}
+      Types.Player
+      {Types.playerId = Types.PlayerId $ Text.pack [char], Types.hand = hand}
     startingHands = do
       hand <- handSize nPlayers
       let (hands, deck') = List.splitAt (hand * nPlayers) deck
@@ -152,11 +151,11 @@ playCard' gameState cardState = do
   (playables', lives') <- tryPlayCard playables lives currentCard
   return $
     gameState
-      { Types.players = players'
-      , Types.deck = deck'
-      , Types.playables = playables'
-      , Types.lives = lives'
-      }
+    { Types.players = players'
+    , Types.deck = deck'
+    , Types.playables = playables'
+    , Types.lives = lives'
+    }
   where
     Types.GameState {Types.deck, Types.playables, Types.lives} = gameState
     CardState {currentCard} = cardState
@@ -166,11 +165,11 @@ discardCard' gameState cardState = do
   (players', deck') <- drawCard deck cardState
   return
     gameState
-      { Types.discards = currentCard : discards
-      , Types.deck = deck'
-      , Types.players = players'
-      , Types.clueTokens = increment clueTokens
-      }
+    { Types.discards = currentCard : discards
+    , Types.deck = deck'
+    , Types.players = players'
+    , Types.clueTokens = increment clueTokens
+    }
   where
     Types.GameState {Types.deck, Types.discards, Types.clueTokens} = gameState
     CardState {currentCard} = cardState
